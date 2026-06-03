@@ -12,6 +12,15 @@ importantly, the ability to play with your friends.
 </em></p>
 </div>
 
+## File Structure
+- Code is broken up into Client, Server and Common (self explanatory)
+- Client code contains CPP to be compiled to Web Assembly (thus no main.cpp) and typescript
+- Server code is pure CPP
+- Build will be through CMake, thus CMakeLists.txt present in CPP modules
+- All build output will be in build/ which is .gitignored
+- Anything in /docs is purely for demo purposes (github pages)
+- Will add further details and build instructions soon
+
 ## Tech Stack
 - Game and Rendering logic will be in C++, compiled to WASM 
 - Frontend for the website will be in vanilla HTML/CS/JS (because it's the first time I'm using it)
