@@ -1,10 +1,10 @@
 # Battleships Web Game
 
-A free, open-source 3D web game where you battle your friends in the ocean
+A free, open-source 3D web game where you battle your friends in the ocean. [Demo here](https://tommiedevelops.github.io/battleships-web-game/)
 
 ## Demo
 <div align="center">
-<img src="demo.png" width="800">
+<img src="docs/demo.png" width="800">
 <p><em>
 A render achieved through mouse movement and Microsoft Paint depicting how I would like the game
 to eventually look. There will be an Fourier Transform ocean, destructible boats, realistic boat physics and,
