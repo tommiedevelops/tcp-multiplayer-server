@@ -1,11 +1,26 @@
 "use strict";
-async function main() {
-    const adapter = await navigator.gpu?.requestAdapter();
-    const device = await adapter?.requestDevice();
-    if (!device) {
-        console.error("WebGPU is not supported on this browser.");
+async function start() {
+    if (!navigator.gpu) {
+        console.error("This browser does not support WebGPU");
         return;
     }
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) {
+        console.error("This browser supports WebGPU but it appears to be disabled");
+        return;
+    }
+    const device = await adapter.requestDevice();
+    device.lost.then((info) => {
+        console.error(`WebGPU device was lost: ${info.message}`);
+        // destroyed => we intentionally destroyed the device
+        if (info.reason !== 'destroyed') {
+            start();
+        }
+    });
+    main(device);
+}
+start();
+function main(device) {
     const canvas = document.querySelector("canvas");
     const context = canvas.getContext("webgpu");
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
@@ -16,21 +31,43 @@ async function main() {
     const shaderModule = device.createShaderModule({
         label: 'triangle',
         code: /* wgsl */ `
+
+            struct VSout {
+                @builtin(position) position: vec4f,
+                @location(0) color: vec4f,
+            };
+
             @vertex fn vs(
                 @builtin(vertex_index) vertexIndex : u32
-            ) -> @builtin(position) vec4f {
+            ) -> VSout {
+
                 let pos = array(
                     vec2f( 0.0, 0.5 ), // top center
                     vec2f(-0.5, -0.5), // bottom left
                     vec2f( 0.5, -0.5)  // bottom right
                 );
 
-                return vec4f(pos[vertexIndex], 0.0, 1.0);
+                var color = array<vec4f,3>(
+                    vec4f(1,0,0,1),
+                    vec4f(0,1,0,1),
+                    vec4f(0,0,1,1),
+                );
+
+                var vsOut : VSout;
+                vsOut.position = vec4f(pos[vertexIndex], 0.0, 1.0);
+                vsOut.color = color[vertexIndex];
+
+                return vsOut;
             }
         
 
-        @fragment fn fs() -> @location(0) vec4f {
-            return vec4f(1.0, 0.0, 0.0, 1.0); 
+        @fragment fn fs(fsIn: VSout) -> @location(0) vec4f {
+            let grid = vec2u(fsIn.position.xy) / 8;
+            let checker = (grid.x + grid.y) % 2 == 1;
+
+            let black = vec4f(0,0,0,0);
+
+            return select(fsIn.color, black, checker);
         }
       `,
     });
@@ -87,4 +124,3 @@ async function main() {
     });
     observer.observe(canvas);
 }
-main();
