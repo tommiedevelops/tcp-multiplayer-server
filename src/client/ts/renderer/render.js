@@ -1,47 +1,36 @@
+"use strict";
 async function start() {
-
-    if(!navigator.gpu) {
+    if (!navigator.gpu) {
         console.error("This browser does not support WebGPU");
         return;
     }
-
-    const adapter: GPUAdapter | null = await navigator.gpu.requestAdapter();
-
-    if(!adapter) {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) {
         console.error("This browser supports WebGPU but it appears to be disabled");
         return;
     }
-
     const device = await adapter.requestDevice();
-
-    device.lost.then( (info) => {
+    device.lost.then((info) => {
         console.error(`WebGPU device was lost: ${info.message}`);
-
         // destroyed => we intentionally destroyed the device
         if (info.reason !== 'destroyed') {
             start();
         }
     });
-
     main(device);
 }
-
 start();
-
-function main(device: GPUDevice) {
-
-    const canvas = document.querySelector("canvas") as HTMLCanvasElement;
-    const context = canvas.getContext("webgpu") as GPUCanvasContext;
-
+function main(device) {
+    const canvas = document.querySelector("canvas");
+    const context = canvas.getContext("webgpu");
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
     context.configure({
         device,
         format: presentationFormat,
     });
-    
     const shaderModule = device.createShaderModule({
         label: 'triangle',
-        code: /* wgsl */`
+        code: /* wgsl */ `
 
             struct Uniform {
                 color: vec4f,
@@ -88,86 +77,65 @@ function main(device: GPUDevice) {
         }
       `,
     });
-
     const pipeline = device.createRenderPipeline({
         label: 'triangle pipeline',
         layout: 'auto',
         vertex: {
             entryPoint: 'vs',
-            module: shaderModule,   
+            module: shaderModule,
         },
         fragment: {
             entryPoint: 'fs',
             module: shaderModule,
-            targets: [{format: presentationFormat}],
+            targets: [{ format: presentationFormat }],
         },
-    }) as GPURenderPipeline;
-
-    const renderPassDescriptor: GPURenderPassDescriptor = {
+    });
+    const renderPassDescriptor = {
         label: 'triangle render pass',
         colorAttachments: [
             {
-                view: null as unknown as GPUTextureView,
+                view: null,
                 clearValue: [0.3, 0.3, 0.3, 1],
                 loadOp: 'clear',
                 storeOp: 'store',
             },
         ],
     };
-
-    const uniformBufferSize =
-        4 * 4 + // color is 4 32bit floats (4bytes each)
+    const uniformBufferSize = 4 * 4 + // color is 4 32bit floats (4bytes each)
         2 * 4 + // scale is 2 32bit floats (4bytes each)
-        2 * 4;  // offset is 2 32bit floats (4bytes each)
-
-    const uniformBuffer : GPUBuffer = device.createBuffer({
-            size: uniformBufferSize,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        2 * 4; // offset is 2 32bit floats (4bytes each)
+    const uniformBuffer = device.createBuffer({
+        size: uniformBufferSize,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
-
-
-    function render() : void {
-      
+    function render() {
         if (!device) {
             console.error("WebGPU is not supported on this browser.");
             return;
         }
-
         let colorAttachment = renderPassDescriptor.colorAttachments[0];
-        if (!colorAttachment) return;
-
+        if (!colorAttachment)
+            return;
         colorAttachment.view = context.getCurrentTexture().createView();
-
-        const encoder: GPUCommandEncoder =
-          device.createCommandEncoder({ label: "encoder" });
-
-        const pass: GPURenderPassEncoder =
-          encoder.beginRenderPass(renderPassDescriptor);
-
+        const encoder = device.createCommandEncoder({ label: "encoder" });
+        const pass = encoder.beginRenderPass(renderPassDescriptor);
         pass.setPipeline(pipeline);
         pass.draw(3); // call vertex shader 3 times
         pass.end();
-
-        const commandBuffer: GPUCommandBuffer = encoder.finish();
-
+        const commandBuffer = encoder.finish();
         device.queue.submit([commandBuffer]);
-
     }
-
     const observer = new ResizeObserver(entries => {
-        for(const entry of entries) {
-            const canvas = entry.target as HTMLCanvasElement;
-
-            if(!entry.contentBoxSize[0]) continue;
-
-            const width  = entry.contentBoxSize[0].inlineSize;
+        for (const entry of entries) {
+            const canvas = entry.target;
+            if (!entry.contentBoxSize[0])
+                continue;
+            const width = entry.contentBoxSize[0].inlineSize;
             const height = entry.contentBoxSize[0].blockSize;
-
-            canvas.width  = Math.max(1, Math.min(width,  device.limits.maxTextureDimension2D));
+            canvas.width = Math.max(1, Math.min(width, device.limits.maxTextureDimension2D));
             canvas.height = Math.max(1, Math.min(height, device.limits.maxTextureDimension2D));
         }
         render();
     });
-
     observer.observe(canvas);
 }

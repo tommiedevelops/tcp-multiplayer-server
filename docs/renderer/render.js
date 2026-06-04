@@ -32,6 +32,14 @@ function main(device) {
         label: 'triangle',
         code: /* wgsl */ `
 
+            struct Uniform {
+                color: vec4f,
+                scale: vec2f,
+                offset vec2f,                
+            };
+
+            @group(0) @binding(0) var<uniform> uni : Uniform;
+
             struct VSout {
                 @builtin(position) position: vec4f,
                 @location(0) color: vec4f,
@@ -47,15 +55,13 @@ function main(device) {
                     vec2f( 0.5, -0.5)  // bottom right
                 );
 
-                var color = array<vec4f,3>(
-                    vec4f(1,0,0,1),
-                    vec4f(0,1,0,1),
-                    vec4f(0,0,1,1),
+                var vsOut : VSout;
+
+                vsOut.position = vec4f(
+                    pos[vertexIndex] * uni.scale + uni.offset, 0.0, 1.0;
                 );
 
-                var vsOut : VSout;
-                vsOut.position = vec4f(pos[vertexIndex], 0.0, 1.0);
-                vsOut.color = color[vertexIndex];
+                vsOut.color = uni.color;
 
                 return vsOut;
             }
@@ -95,6 +101,13 @@ function main(device) {
             },
         ],
     };
+    const uniformBufferSize = 4 * 4 + // color is 4 32bit floats (4bytes each)
+        2 * 4 + // scale is 2 32bit floats (4bytes each)
+        2 * 4; // offset is 2 32bit floats (4bytes each)
+    const uniformBuffer = device.createBuffer({
+        size: uniformBufferSize,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
     function render() {
         if (!device) {
             console.error("WebGPU is not supported on this browser.");
@@ -115,6 +128,8 @@ function main(device) {
     const observer = new ResizeObserver(entries => {
         for (const entry of entries) {
             const canvas = entry.target;
+            if (!entry.contentBoxSize[0])
+                continue;
             const width = entry.contentBoxSize[0].inlineSize;
             const height = entry.contentBoxSize[0].blockSize;
             canvas.width = Math.max(1, Math.min(width, device.limits.maxTextureDimension2D));
