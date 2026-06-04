@@ -1,4 +1,15 @@
 "use strict";
+const rand = (min = 0, max = 1) => {
+    if (min === undefined) {
+        min = 0;
+        max = 1;
+    }
+    else if (max === undefined) {
+        max = min;
+        min = 0;
+    }
+    return min + Math.random() * (max - min);
+};
 async function start() {
     if (!navigator.gpu) {
         console.error("This browser does not support WebGPU");
@@ -35,7 +46,7 @@ function main(device) {
             struct Uniform {
                 color: vec4f,
                 scale: vec2f,
-                offset vec2f,                
+                offset: vec2f,                
             };
 
             @group(0) @binding(0) var<uniform> uni : Uniform;
@@ -58,7 +69,7 @@ function main(device) {
                 var vsOut : VSout;
 
                 vsOut.position = vec4f(
-                    pos[vertexIndex] * uni.scale + uni.offset, 0.0, 1.0;
+                    pos[vertexIndex] * uni.scale + uni.offset, 0.0, 1.0
                 );
 
                 vsOut.color = uni.color;
@@ -104,10 +115,33 @@ function main(device) {
     const uniformBufferSize = 4 * 4 + // color is 4 32bit floats (4bytes each)
         2 * 4 + // scale is 2 32bit floats (4bytes each)
         2 * 4; // offset is 2 32bit floats (4bytes each)
-    const uniformBuffer = device.createBuffer({
-        size: uniformBufferSize,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
+    const kColorOffset = 0;
+    const kScaleOffset = 4;
+    const kOffsetOffset = 6;
+    const kNumObjects = 100;
+    const objectInfos = [];
+    for (let i = 0; i < kNumObjects; ++i) {
+        const uniformBuffer = device.createBuffer({
+            label: `uniforms for obj: ${i}`,
+            size: uniformBufferSize,
+            // TS will error below if @webgpu/types not installed
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        const uniformValues = new Float32Array(uniformBufferSize / 4);
+        uniformValues.set([rand(), rand(), rand(), 1], kColorOffset);
+        uniformValues.set([rand(-0.9, 0.9), rand(-0.9, 0.9)], kOffsetOffset);
+        const bindGroup = device.createBindGroup({
+            label: `bind group for obj ${i}`,
+            layout: pipeline.getBindGroupLayout(0),
+            entries: [{ binding: 0, resource: uniformBuffer }],
+        });
+        objectInfos.push({
+            scale: rand(0.2, 0.5),
+            uniformBuffer,
+            uniformValues,
+            bindGroup,
+        });
+    }
     function render() {
         if (!device) {
             console.error("WebGPU is not supported on this browser.");
@@ -120,7 +154,13 @@ function main(device) {
         const encoder = device.createCommandEncoder({ label: "encoder" });
         const pass = encoder.beginRenderPass(renderPassDescriptor);
         pass.setPipeline(pipeline);
-        pass.draw(3); // call vertex shader 3 times
+        const aspect = canvas.width / canvas.height;
+        for (const { scale, bindGroup, uniformBuffer, uniformValues } of objectInfos) {
+            uniformValues.set([scale / aspect, scale], kScaleOffset);
+            device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
+            pass.setBindGroup(0, bindGroup);
+            pass.draw(3);
+        }
         pass.end();
         const commandBuffer = encoder.finish();
         device.queue.submit([commandBuffer]);
