@@ -43,6 +43,14 @@ function main(device: GPUDevice) {
         label: 'triangle',
         code: /* wgsl */`
 
+            struct Uniform {
+                color: vec4f,
+                scale: vec2f,
+                offset vec2f,                
+            };
+
+            @group(0) @binding(0) var<uniform> uni : Uniform;
+
             struct VSout {
                 @builtin(position) position: vec4f,
                 @location(0) color: vec4f,
@@ -58,15 +66,13 @@ function main(device: GPUDevice) {
                     vec2f( 0.5, -0.5)  // bottom right
                 );
 
-                var color = array<vec4f,3>(
-                    vec4f(1,0,0,1),
-                    vec4f(0,1,0,1),
-                    vec4f(0,0,1,1),
+                var vsOut : VSout;
+
+                vsOut.position = vec4f(
+                    pos[vertexIndex] * uni.scale + uni.offset, 0.0, 1.0;
                 );
 
-                var vsOut : VSout;
-                vsOut.position = vec4f(pos[vertexIndex], 0.0, 1.0);
-                vsOut.color = color[vertexIndex];
+                vsOut.color = uni.color;
 
                 return vsOut;
             }
