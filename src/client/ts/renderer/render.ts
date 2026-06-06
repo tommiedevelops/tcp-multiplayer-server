@@ -1,3 +1,4 @@
+import { loadGLB } from "./load_glb"
 
 const rand = (min : number = 0, max : number = 1) => {
     if(min === undefined) {
@@ -39,7 +40,51 @@ async function start() {
     main(device);
 }
 
-start();
+const shader : string = /*wgsl*/`
+    struct Uniform {
+        color: vec4f,
+        scale: vec2f,
+        offset: vec2f,                
+    };
+
+    @group(0) @binding(0) var<uniform> uni : Uniform;
+
+    struct VSout {
+        @builtin(position) position: vec4f,
+        @location(0) color: vec4f,
+    };
+
+    @vertex fn vs(
+        @builtin(vertex_index) vertexIndex : u32
+    ) -> VSout {
+
+        let pos = array(
+            vec2f( 0.0, 0.5 ), // top center
+            vec2f(-0.5, -0.5), // bottom left
+            vec2f( 0.5, -0.5)  // bottom right
+        );
+
+        var vsOut : VSout;
+
+        vsOut.position = vec4f(
+            pos[vertexIndex] * uni.scale + uni.offset, 0.0, 1.0
+        );
+
+        vsOut.color = uni.color;
+
+        return vsOut;
+    }
+        
+
+    @fragment fn fs(fsIn: VSout) -> @location(0) vec4f {
+        let grid = vec2u(fsIn.position.xy) / 8;
+        let checker = (grid.x + grid.y) % 2 == 1;
+
+        let black = vec4f(0,0,0,0);
+
+        return select(fsIn.color, black, checker);
+    }
+`;
 
 function main(device: GPUDevice) {
 
@@ -54,63 +99,16 @@ function main(device: GPUDevice) {
     
     const shaderModule = device.createShaderModule({
         label: 'triangle',
-        code: /* wgsl */`
-
-            struct Uniform {
-                color: vec4f,
-                scale: vec2f,
-                offset: vec2f,                
-            };
-
-            @group(0) @binding(0) var<uniform> uni : Uniform;
-
-            struct VSout {
-                @builtin(position) position: vec4f,
-                @location(0) color: vec4f,
-            };
-
-            @vertex fn vs(
-                @builtin(vertex_index) vertexIndex : u32
-            ) -> VSout {
-
-                let pos = array(
-                    vec2f( 0.0, 0.5 ), // top center
-                    vec2f(-0.5, -0.5), // bottom left
-                    vec2f( 0.5, -0.5)  // bottom right
-                );
-
-                var vsOut : VSout;
-
-                vsOut.position = vec4f(
-                    pos[vertexIndex] * uni.scale + uni.offset, 0.0, 1.0
-                );
-
-                vsOut.color = uni.color;
-
-                return vsOut;
-            }
-        
-
-        @fragment fn fs(fsIn: VSout) -> @location(0) vec4f {
-            let grid = vec2u(fsIn.position.xy) / 8;
-            let checker = (grid.x + grid.y) % 2 == 1;
-
-            let black = vec4f(0,0,0,0);
-
-            return select(fsIn.color, black, checker);
-        }
-      `,
+        code: shader,
     });
 
     const pipeline = device.createRenderPipeline({
         label: 'triangle pipeline',
         layout: 'auto',
         vertex: {
-            entryPoint: 'vs',
             module: shaderModule,   
         },
         fragment: {
-            entryPoint: 'fs',
             module: shaderModule,
             targets: [{format: presentationFormat}],
         },
@@ -127,6 +125,16 @@ function main(device: GPUDevice) {
             },
         ],
     };
+
+    // *** LOAD IN VERTEX DATA *** 
+    let meshPromise = loadGLB('cube.glb');
+    
+    /*
+    positions_OS = mesh.positions;
+    indices = mesh.indices;
+    */
+
+    // *** CREATE VERTEX BUFFER ****
 
     const uniformBufferSize =
         4 * 4 + // color is 4 32bit floats (4bytes each)
@@ -176,17 +184,11 @@ function main(device: GPUDevice) {
 
     function render() : void {
       
-        if (!device) {
-            console.error("WebGPU is not supported on this browser.");
-            return;
-        }
-
         let colorAttachment = renderPassDescriptor.colorAttachments[0];
         if (!colorAttachment) return;
 
         colorAttachment.view = context.getCurrentTexture().createView();
 
-                
         const encoder: GPUCommandEncoder =
           device.createCommandEncoder({ label: "encoder" });
 
@@ -197,7 +199,8 @@ function main(device: GPUDevice) {
 
         const aspect = canvas.width / canvas.height;
 
-        for (const {scale, bindGroup, uniformBuffer, uniformValues} of objectInfos) {
+        for (const {scale, bindGroup, uniformBuffer, uniformValues} of objectInfos) 
+        {
             uniformValues.set([ scale / aspect, scale], kScaleOffset);
             device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
             pass.setBindGroup(0, bindGroup);
@@ -211,7 +214,7 @@ function main(device: GPUDevice) {
 
     }
 
-    const observer = new ResizeObserver(entries => {
+    const canvasObserver = new ResizeObserver(entries => {
         for(const entry of entries) {
             const canvas = entry.target as HTMLCanvasElement;
 
@@ -226,5 +229,7 @@ function main(device: GPUDevice) {
         render();
     });
 
-    observer.observe(canvas);
+    canvasObserver.observe(canvas);
 }
+start();
+
