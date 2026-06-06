@@ -1,48 +1,29 @@
-# Battleships Web Game
+# TCP Multiplayer Server
 
-A free, open-source 3D web game where you battle your friends in the ocean. [Demo here](https://tommiedevelops.github.io/battleships-web-game/)
+A multiplayer server developed in C++ that uses the TCP protocol to allow users to create and join
+lobbies and chat over the internet.
 
 ## Demo
+Not much to see yet but here's the [demo](https://tommiedevelops.github.io/tcp-multiplayer-server/) 
+if you're interested.
+
+## Architecture
 <div align="center">
-<img src="docs/demo.png" width="800">
+<img src="docs/tcp-server-diagram.svg">
 <p><em>
-A render achieved through mouse movement and Microsoft Paint depicting how I would like the game
-to eventually look. There will be an Fourier Transform ocean, destructible boats, realistic boat physics and,
-importantly, the ability to play with your friends.
+A rough sketch of the architecture. Client-side code will be in TypeScript, executed by a browser engine (e.g. v8). It will provide UI to host / join lobbies where a user can interact with other users in a simple 3D scene over the internet. The server side will be cloud-hosted C++ code with several networking layer to support a TCP connection over the internet.
 </em></p>
 </div>
 
 ## Rough Milestones
 **Client**    
-[ ] Complete webgpufundamentals.org tutorial   
+[x] Complete webgpufundamentals.org tutorial   
 [ ] Load custom assets (mesh, textures)    
-[ ] Add support for per-entity materials   
-[ ] Render simple 3D scene    
-[ ] Add toon shader   
-[ ] Add more tasks here
-
-[ ] (Later) FFT Ocean with TS and WGSL compute shaders
+[ ] Render simple 3D scene with GameObjects
 
 **Server**   
 [ ] Simple TCP echo server (single client, get socket talking)   
 [ ] Multi-client with poll()   
 [ ] Simple chat server, handle disconnects cleanly    
 [ ] Simple authoritative game server (reports Transform data)    
-[ ] Add serialization for ECS    
-[ ] Add more once done
-
-**Shared**   
-[ ] ECS Scene Manager   
-[ ] Basic physics engine (Collision, Buoyancy, Movement)   
-[ ] Procedural map generator (marching cube terrain)   
-[ ] Core game logic (win/lose conditions, game loop, menus etc.)
-
-
-## File Structure
-- Code is broken up into Client, Server and Common (self explanatory)
-- Client code contains CPP to be compiled to Web Assembly (thus no main.cpp) and typescript
-- Server code is pure CPP
-- Build will be through CMake, thus CMakeLists.txt present in CPP modules
-- All build output will be in build/ which is .gitignored
-- Anything in /docs is purely for demo purposes (github pages)
-- Will add further details and build instructions soon
+[ ] Simple lobby / matchmaking over the internet (Cloud hosting?)
