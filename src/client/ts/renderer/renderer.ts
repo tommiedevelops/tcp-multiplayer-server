@@ -53,7 +53,7 @@ export class Renderer {
         const encoder = this.device.createCommandEncoder();
 
         const pass = encoder.beginRenderPass({
-
+            label: 'Generic Render Pass',
             colorAttachments: [{
                 view: this.context.getCurrentTexture().createView(),
                 clearValue: this.clearColor,
@@ -80,14 +80,30 @@ export class Renderer {
     }
 
     createBuffer(data: Float32Array | Uint16Array, usage: GPUBufferUsageFlags) : GPUBuffer
-    { // TOREVIEW
+    {
         const buffer = this.device.createBuffer({
             size: data.byteLength,
             usage: usage | GPUBufferUsage.COPY_DST,
         });
 
+        if(!buffer) throw new Error("Buffer error"); // handle gracefully
+
         return buffer;
     }
+
+    writeBuffer(buffer: GPUBuffer, data: Float32Array | Uint16Array, offset = 0): void
+    {
+        if(!buffer) throw new Error("Buffer error");
+        if(!data) throw new Error("Provided array was null");
+        if(offset < 0 || offset + data.length > buffer.size) 
+            throw new Error(`tried to write ${data.length} bytes at offset ${offset}`);
+
+        this.device.queue.writeBuffer(buffer, offset, data);
+    }
+
+    createPipeline() : void /* Returns RenderPipeline */
+    {}
+
 
     /* GETTERS AND SETTERS */
     getDevice(): GPUDevice { return this.device; }
