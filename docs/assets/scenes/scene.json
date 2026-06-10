@@ -1,0 +1,41 @@
+{
+    "name": "Root",
+    "transform": {
+        "position": [0,0,0],
+        "rotation": [0,0,0,0],
+        "scale": [1,1,1]
+    },
+    "children": [
+        {
+            "name": "Player1",
+            "transform": [5, 0, 0],
+            "rotation": [0,0,0,0],
+            "scale": [1,1,1],
+            "children": [],
+            "mesh": "",
+            "material": ""
+        },
+        {
+            "name": "Player2",
+            "transform": [-5, 0, 0],
+            "rotation": [0,0,0,0],
+            "scale": [1,1,1],
+            "children": [],
+            "mesh": "",
+            "material": ""
+
+        },
+        {
+            "name": "Camera",
+            "transform": [0, 0, -10],
+            "rotation": [0,0,0,0],
+            "scale": [1,1,1],
+            "children": [],
+            "mesh": "",
+            "material": ""
+        }
+
+    ],
+    "mesh": "",
+    "material": ""
+}
