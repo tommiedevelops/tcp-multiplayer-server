@@ -3,6 +3,9 @@
 // Hardcode some stuff into the scene for now
 
 import { Renderer } from "./renderer/renderer"
+import { readFileSync } from "fs";
+
+import SceneGraph from "./scene/scene_graph.js"
 
 async function main()
 {
@@ -12,8 +15,24 @@ async function main()
 
     let renderer : Renderer = await Renderer.create(canvas);
 
-    // Create SceneGraph or load from memory
-    // let sceneGraph : SceneGraph = new SceneGraph(pathToSceneGraphFile);
+    // Retrieve Scene (for now hardcoded but in future from server and probably part of main loop)
+    const response = await fetch("/assets/scene.json");
+
+    if(!response.ok) {
+        console.error("HTTP-Error: " + response.status);
+        return -1;
+    }
+
+    let sceneJSON : string;
+    try {
+        sceneJSON = await response.json();
+    } catch(e) {
+        console.error(e);
+        return -1;
+    }
+
+    // Construct Scene Graph
+    const scene: SceneGraph = new SceneGraph(sceneJSON);
 
     // Main Loop
     while(true)
