@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"types": ["@webgpu/types"],
 		"skipLibCheck": true,
-		"rootDir": "./src/client/ts",
+		"rootDir": "./src/client",
 		"outDir": "./docs"
 	}
 

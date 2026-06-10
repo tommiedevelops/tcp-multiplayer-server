@@ -1,12 +1,10 @@
 import { Transform } from "./transform.js"
 import { Material } from "./material.js"
 
-export class SceneGraph
+export default class SceneGraph
 {
-
     constructor(private pathToJSON : string = "")
     {}
-
 }
 
 class SceneNode
