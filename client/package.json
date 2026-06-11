@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build docs"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.70",
+    "vite": "^8.0.16"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "^4.4.2",
+    "@loaders.gl/gltf": "^4.4.2",
+    "wgpu-matrix": "^3.4.2"
+  }
+}
