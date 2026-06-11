@@ -30,8 +30,10 @@ export async function loadGLB(pathToGlb : string) : Promise<Mesh>
         return new typedArrayCtor(binChunk.arrayBuffer, actualOffset, count);
     }
 
-    let positions = getTypedArrayFromAccessor<Float32Array>(0, Float32Array);
-    let indices = getTypedArrayFromAccessor<Uint16Array>(0, Uint16Array);
+    let positions : Float32Array = getTypedArrayFromAccessor<Float32Array>(0, Float32Array);
+    let normals   : Float32Array = getTypedArrayFromAccessor<Float32Array>(1, Float32Array);
+    let uvs       : Float32Array = getTypedArrayFromAccessor<Float32Array>(2, Float32Array);
+    let indices = getTypedArrayFromAccessor<Uint16Array>(3, Uint16Array);
 
     let numVertices = 8;
 
@@ -41,6 +43,7 @@ export async function loadGLB(pathToGlb : string) : Promise<Mesh>
             vertex ${i/3} is at (${positions[indices[i + 0]]}, ${positions[indices[i + 1]]}, ${positions[indices[i + 2]]}).
         `);
     }
+
     return {
         position: vec3.create(0.0,0.0,0.0) 
     };

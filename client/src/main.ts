@@ -3,9 +3,9 @@
 // Hardcode some stuff into the scene for now
 
 import { Renderer } from "./renderer/renderer"
-import { readFileSync } from "fs";
-
 import { SceneGraph, SceneData }  from "./scene/scene_graph.js"
+import Mesh from "./assets/mesh"
+
 
 async function main()
 {
@@ -27,7 +27,10 @@ async function main()
     console.log(sceneData);
 
     let scene = new SceneGraph(sceneData);
-
+    
+    const mesh = Mesh.fromGLB("./public/models/cube.glb");
+    
+    console.log();
 
     let renderer : Renderer = await Renderer.create(canvas);
 
