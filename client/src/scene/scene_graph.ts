@@ -1,4 +1,6 @@
 
+import { Transform } from "./transform";
+
 export interface ITransform {
     position : [number, number, number],
     rotation : [number, number, number, number],
@@ -26,8 +28,8 @@ export class SceneGraph
 class SceneNode
 {
     children?: Array<SceneNode>; 
-    name?: string = "";
-    //transform?: Transform = new Transform();
+    name?: string;
+    transform?: Transform;
     mesh?: any; //: Mesh = new Mesh();
     //material?: Material  = new Material();
 
@@ -38,7 +40,11 @@ class SceneNode
             result.name = data.name;
 
         if("transform" in data) {
-            // construct Transform from data.transform
+            result.transform = new Transform(
+                data.transform.position,
+                data.transform.rotation,
+                data.transform.scale
+            );
         }
 
         if("mesh" in data) {

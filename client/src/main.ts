@@ -24,30 +24,16 @@ async function main()
 
     let sceneData : SceneData = await httpResponse.json(); // Validate success?
 
+    console.log(sceneData);
+
     let scene = new SceneGraph(sceneData);
 
-    console.log(scene);
 
     let renderer : Renderer = await Renderer.create(canvas);
 
-    // Main Loop
+    let {encoder, pass} = renderer.beginFrame();
 
-    //while(true)
-    //{
-        // Graph Walk 1: Walk Scene Graph and update each node 
-        // (Node's custom logic)
-
-        // Graph Walk 2: Walk Scene Graph to collect all relevant 
-        // render data and store in a TypedArray 
-
-      //  let {encoder, pass} = renderer.beginFrame();
-        // renderer.createBuffer() <-- fill with render data
-        // --- render steps ---
-        // Pipelines are created with shader modules (maybe create a pipeline class)
-     //   renderer.endFrame(encoder, pass); // Submitted here
-
-    //}
-
+    renderer.endFrame(encoder, pass);
 }
 
 main();
