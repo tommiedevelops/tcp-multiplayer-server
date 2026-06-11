@@ -15,7 +15,7 @@ async function main()
     // Is canvas a valid object, is it what I expect for a WebGPU app?
 
     // Retrieve Scene (for now hardcoded but in future from server and probably part of main loop)
-    const httpResponse = await fetch("./public/scenes/scene.json");
+    const httpResponse = await fetch("./scenes/scene.json");
 
     if(!httpResponse.ok) {
         console.error("HTTP-Error: " + httpResponse.status);
@@ -28,9 +28,9 @@ async function main()
 
     let scene = new SceneGraph(sceneData);
     
-    const mesh = Mesh.fromGLB("./public/models/cube.glb");
-    
-    console.log();
+    const mesh = await Mesh.fromGLB("./models/cube.glb");
+
+    console.log(mesh);
 
     let renderer : Renderer = await Renderer.create(canvas);
 
