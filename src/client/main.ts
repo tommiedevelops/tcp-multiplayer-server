@@ -5,7 +5,7 @@
 import { Renderer } from "./renderer/renderer"
 import { readFileSync } from "fs";
 
-import SceneGraph from "./scene/scene_graph.js"
+import { SceneGraph, SceneData }  from "./scene/scene_graph.js"
 
 async function main()
 {
@@ -21,7 +21,7 @@ async function main()
         return;
     }
 
-    let sceneData : any = await httpResponse.json(); // Validate success?
+    let sceneData : SceneData = await httpResponse.json(); // Validate success?
 
     let scene = new SceneGraph(sceneData);
 

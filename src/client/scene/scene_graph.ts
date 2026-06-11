@@ -1,17 +1,24 @@
 import { Transform } from "./transform.js"
 import { Material } from "../assets/material.js"
 
-export default class SceneGraph
+export interface SceneData {
+    name: string,
+    transform: string,
+    meshRef: string,
+    matRef: string,
+    children: SceneData
+}
+
+export class SceneGraph
 {
-    // At this stage, this is essentially a list of other nodes.
     private root : SceneNode;
 
-    constructor(sceneData : any) // change to be of type SceneData
-    {
+    constructor(sceneData : SceneData) {
         this.root = SceneNode.fromSceneData(sceneData);
     }
     
 }
+
 
 class SceneNode
 {
@@ -21,7 +28,7 @@ class SceneNode
     mesh?: any; //: Mesh = new Mesh();
     material?: Material  = new Material();
 
-    static fromSceneData(data: any): SceneNode {
+    static fromSceneData(data: SceneData): SceneNode {
         let result : SceneNode = new SceneNode();
 
         if("name" in data)
