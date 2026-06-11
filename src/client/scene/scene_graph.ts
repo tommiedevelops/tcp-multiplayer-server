@@ -6,24 +6,10 @@ export default class SceneGraph
     // At this stage, this is essentially a list of other nodes.
     private root : SceneNode;
 
-    constructor(private jsonString : string = "")
+    constructor(sceneData : any) // change to be of type SceneData
     {
-        if(jsonString === "")
-            this.root = new SceneNode();
-
-        // I may have to try / catch here as well because the parsing may fail
-        const rawObj = JSON.parse(jsonString, function(key, value) {
-            // Reviver if needed?
-        });
-
-        this.root = SceneNode.fromJSON(rawObj);
+        this.root = SceneNode.fromSceneData(sceneData);
     }
-
-    public serializeJSON(pathToSeriralize : string) : void
-    {
-        // method for serializing the SceneGraph to JSON
-    }
-
     
 }
 
@@ -35,7 +21,7 @@ class SceneNode
     mesh?: any; //: Mesh = new Mesh();
     material?: Material  = new Material();
 
-    static fromJSON(data: any): SceneNode {
+    static fromSceneData(data: any): SceneNode {
         let result : SceneNode = new SceneNode();
 
         if("name" in data)
@@ -54,7 +40,9 @@ class SceneNode
         }
         
         if("children" in data) {
-            result.children = data.children.map((c: any) => SceneNode.fromJSON(c));
+            result.children = data.children.map(
+                (c: any) => SceneNode.fromSceneData(c)
+            );
         }
 
         return result;

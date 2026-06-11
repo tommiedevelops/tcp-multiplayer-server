@@ -13,27 +13,19 @@ async function main()
     // Maybe worth doing some validation here. 
     // Is canvas a valid object, is it what I expect for a WebGPU app?
 
-    let renderer : Renderer = await Renderer.create(canvas);
-
     // Retrieve Scene (for now hardcoded but in future from server and probably part of main loop)
-    const response = await fetch("/assets/scene.json");
+    const httpResponse = await fetch("/assets/scene/scene.json");
 
-    if(!response.ok) {
-        console.error("HTTP-Error: " + response.status);
-        return -1;
+    if(!httpResponse.ok) {
+        console.error("HTTP-Error: " + httpResponse.status);
+        return;
     }
 
-    let sceneJSON : string;
-    try {
-        sceneJSON = await response.json();
-    } catch(e) {
-        console.error(e);
-        return -1;
-    }
+    let sceneData : any = await httpResponse.json(); // Validate success?
 
-    // Construct Scene Graph
-    const scene: SceneGraph = new SceneGraph(sceneJSON);
+    let scene = new SceneGraph(sceneData);
 
+    let renderer : Renderer = await Renderer.create(canvas);
     // Main Loop
     while(true)
     {

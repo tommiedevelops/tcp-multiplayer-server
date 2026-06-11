@@ -1,4 +1,4 @@
-import { loadGLB } from "./load_glb"
+import { loadGLB } from "./assets/load_glb"
 
 const rand = (min : number = 0, max : number = 1) => {
     if(min === undefined) {
