@@ -7,7 +7,7 @@ export class Renderer {
     private constructor(
         private device: GPUDevice,
         private context: GPUCanvasContext,
-        private format: GPUTextureFormat,
+        private presentationFormat: GPUTextureFormat,
         private depthTexture: GPUTexture,
     ) {}
 
@@ -79,10 +79,10 @@ export class Renderer {
         this.device.queue.submit([encoder.finish()]);
     }
 
-    createBuffer(data: Float32Array | Uint16Array, usage: GPUBufferUsageFlags) : GPUBuffer
+    createBuffer(size : number, usage: GPUBufferUsageFlags) : GPUBuffer
     {
         const buffer = this.device.createBuffer({
-            size: data.byteLength,
+            size:  size,
             usage: usage | GPUBufferUsage.COPY_DST,
         });
 
@@ -101,13 +101,26 @@ export class Renderer {
         this.device.queue.writeBuffer(buffer, offset, data);
     }
 
-    createPipeline() : void /* Returns RenderPipeline */
-    {}
+    createPipeline(vs: GPUShaderModule, fs: GPUShaderModule, label: string) : GPURenderPipeline
+    {
+        const pipeline : GPURenderPipeline = this.device.createRenderPipeline({
+            label: label,
+            layout: 'auto',
+            vertex: {
+                module: vs,
+            },
+            fragment: {
+                module: fs,
+                targets: [{ format: this.presentationFormat }]
+            },
+        });
 
+        return pipeline;
+    }
 
     /* GETTERS AND SETTERS */
     getDevice(): GPUDevice { return this.device; }
-    getFormat(): GPUTextureFormat { return this.format; }
+    getFormat(): GPUTextureFormat { return this.presentationFormat; }
     setClearColor(r: number, g: number, b: number, a: number = 1.0) : void 
     {
         this.clearColor = { r, g, b, a};
