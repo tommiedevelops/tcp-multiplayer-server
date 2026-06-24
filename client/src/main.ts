@@ -83,24 +83,53 @@ async function main()
 
     const uniformBuffer = renderer.createBuffer(16, GPUBufferUsage.UNIFORM);
 
-    const uniformData = new Float32Array([
-       canvas.width, canvas.height, 0, 0
-    ]);
-
-    renderer.writeBuffer(uniformBuffer, uniformData);
-
     let bindGroup = renderer.createBindGroup(
         pipeline.getBindGroupLayout(0), 
         [{binding: 0, resource: {buffer: uniformBuffer}}]
     );
 
-    let {encoder, pass} = renderer.beginFrame();
+    // Observer for resizing the canvas
+    const observer = new ResizeObserver(entries => {
+        for (const entry of entries) {
 
-    pass.setPipeline(pipeline);
-    pass.setBindGroup(0, bindGroup);
-    pass.draw(3); // rasterize a full screen triangle
+            const canvas = entry.target as HTMLCanvasElement;
+            const width = entry.contentBoxSize[0].inlineSize;
+            const height = entry.contentBoxSize[0].blockSize;
 
-    renderer.endFrame(encoder, pass);
+            canvas.width = Math.max(1, Math.min(width, renderer.getDevice().limits.maxTextureDimension2D));
+            canvas.height = Math.max(1, Math.min(height, renderer.getDevice().limits.maxTextureDimension2D));
+
+            renderer.onCanvasResize(canvas.width, canvas.height);
+        }
+    });
+
+    observer.observe(canvas);
+
+    // A frame
+    let start = Date.now();
+    let totalTime = 0;
+    function frame() {
+        // Update time
+
+        let dt = Date.now() - start;
+        totalTime += dt / 1000; // number of seconds passed
+        start = Date.now();
+
+        let uniformData = new Float32Array([
+            canvas.width, canvas.height, totalTime, 0
+        ])
+
+        renderer.writeBuffer(uniformBuffer, uniformData);
+
+        const { encoder, pass } = renderer.beginFrame();
+        pass.setPipeline(pipeline);
+        pass.setBindGroup(0, bindGroup);
+        pass.draw(3);
+        renderer.endFrame(encoder, pass);
+        requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
 }
 
 main();

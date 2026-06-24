@@ -1,7 +1,7 @@
 export class Renderer {
 
     /* PROPERTIES */
-    private clearColor: GPUColor = { r: 0.3, g: 0.3, b: 0.3, a: 1.0};
+    private clearColor: GPUColor = { r: 1.0, g: 1.0, b: 1.0, a: 1.0};
 
     /* CONSTRUCTOR */
     private constructor(
@@ -45,6 +45,16 @@ export class Renderer {
         });
 
         return new Renderer(device, context, presentationFormat, depthTexture);
+    }
+
+    /* CALLBACKS */
+    onCanvasResize(width: number, height: number) {
+        this.depthTexture?.destroy();
+        this.depthTexture = this.device.createTexture({
+            size: [width, height],
+            format: "depth24plus",
+            usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        })
     }
 
     /* METHODS */
