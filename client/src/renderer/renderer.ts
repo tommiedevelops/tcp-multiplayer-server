@@ -101,6 +101,15 @@ export class Renderer {
         this.device.queue.writeBuffer(buffer, offset, data);
     }
 
+    createShader(shaderSourceText: string, label: string): GPUShaderModule
+    // Assumes you have already extracted the shader source text
+    {
+        return this.device.createShaderModule({
+            label: label,
+            code: shaderSourceText,
+        });
+    }
+
     createPipeline(vs: GPUShaderModule, fs: GPUShaderModule, label: string) : GPURenderPipeline
     {
         const pipeline : GPURenderPipeline = this.device.createRenderPipeline({

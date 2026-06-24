@@ -63,7 +63,20 @@ async function main()
     const viewUniformBuffer = renderer.createBuffer(viewUniformBufferSize, GPUBufferUsage.UNIFORM);
     const projUniformBuffer = renderer.createBuffer(projUniformBufferSize, GPUBufferUsage.UNIFORM);
 
+    // Write shaders first then write buffers and pipelines to match them
+
+    // Meshes should own their own vertex and index buffers
+    // and a uniform model buffer
+
+    // The camera will store the uniform view / projection buffer
+
+    // Materials will own their own GPURenderPipeline as well as a BindGroupLayout
+    // BindGroupLayout declares what resources are required by the shaders inside the GPURenderPipeline as well as tehri shape 
+
     //const pipeline = renderer.createPipeline();
+
+    const shaderFileResponse = await fetch("./shaders/brick_tower.wgsl");
+    const source = await shaderFileResponse.text();
 
     let {encoder, pass} = renderer.beginFrame();
 
