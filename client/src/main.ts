@@ -76,9 +76,29 @@ async function main()
     //const pipeline = renderer.createPipeline();
 
     const shaderFileResponse = await fetch("./shaders/brick_tower.wgsl");
-    const source = await shaderFileResponse.text();
+    const source : string = await shaderFileResponse.text();
+
+    const shader = renderer.createShader(source, "brick_tower");
+    const pipeline = renderer.createPipeline(shader, shader, "brick_tower");
+
+    const uniformBuffer = renderer.createBuffer(16, GPUBufferUsage.UNIFORM);
+
+    const uniformData = new Float32Array([
+       canvas.width, canvas.height, 0, 0
+    ]);
+
+    renderer.writeBuffer(uniformBuffer, uniformData);
+
+    let bindGroup = renderer.createBindGroup(
+        pipeline.getBindGroupLayout(0), 
+        [{binding: 0, resource: {buffer: uniformBuffer}}]
+    );
 
     let {encoder, pass} = renderer.beginFrame();
+
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.draw(3); // rasterize a full screen triangle
 
     renderer.endFrame(encoder, pass);
 }

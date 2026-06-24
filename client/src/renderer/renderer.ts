@@ -122,9 +122,22 @@ export class Renderer {
                 module: fs,
                 targets: [{ format: this.presentationFormat }]
             },
+            depthStencil: {
+                format: "depth24plus",
+                depthWriteEnabled: true,
+                depthCompare: "less",
+            },
         });
 
         return pipeline;
+    }
+
+    createBindGroup(layout: GPUBindGroupLayout, entries: Array<GPUBindGroupEntry>)
+    {
+        return this.device.createBindGroup({
+            layout: layout,
+            entries: entries
+        });
     }
 
     /* GETTERS AND SETTERS */
