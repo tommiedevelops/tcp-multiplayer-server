@@ -105,12 +105,12 @@ async function main()
 
     observer.observe(canvas);
 
-    // A frame
+    // Main Loop
     let start = Date.now();
     let totalTime = 0;
     function frame() {
-        // Update time
 
+        // Update Uniforms
         let dt = Date.now() - start;
         totalTime += dt / 1000; // number of seconds passed
         start = Date.now();
@@ -121,11 +121,13 @@ async function main()
 
         renderer.writeBuffer(uniformBuffer, uniformData);
 
+        // Render Frame
         const { encoder, pass } = renderer.beginFrame();
         pass.setPipeline(pipeline);
         pass.setBindGroup(0, bindGroup);
         pass.draw(3);
         renderer.endFrame(encoder, pass);
+
         requestAnimationFrame(frame);
     }
 
