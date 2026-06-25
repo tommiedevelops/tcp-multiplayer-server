@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "vite",
-    "build": "vite build docs"
+    "build": "vite build"
   },
   "devDependencies": {
     "@webgpu/types": "^0.1.70",
