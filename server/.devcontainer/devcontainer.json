@@ -5,6 +5,9 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"mounts": [
+            "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
+        ],
 	"remoteEnv": {
 		"SSH_AUTH_SOCK": "/ssh-agent"
 	}
