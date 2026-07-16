@@ -4,6 +4,9 @@
 	"name": "C++",
 	"build": {
 		"dockerfile": "Dockerfile"
+	},
+	"remoteEnv": {
+		"SSH_AUTH_SOCK": "/ssh-agent"
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
