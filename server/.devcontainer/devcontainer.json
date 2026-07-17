@@ -10,7 +10,9 @@
         ],
 	"remoteEnv": {
 		"SSH_AUTH_SOCK": "/ssh-agent"
-	}
+	},
+	"forwardPorts": [54000]
+
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
